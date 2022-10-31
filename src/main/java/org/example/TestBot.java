@@ -19,5 +19,6 @@ public class TestBot extends DefaultAbsSender {
     public static void main(String[] args) throws TelegramApiException {
         TestBot bot = new TestBot(new DefaultBotOptions());
         bot.execute(SendMessage.builder().chatId("374927123123548").text("Hello from Java").build());
+        bot.execute(SendMessage.builder().chatId("374927123123548").text("Hello from Java").build());
     }
 }
