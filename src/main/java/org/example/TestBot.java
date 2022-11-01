@@ -1,5 +1,8 @@
 package org.example;
 
+import lombok.SneakyThrows;
+import org.telegram.telegrambots.bots.DefaultAbsSender;
+import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -9,22 +12,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 public class TestBot extends TelegramLongPollingBot {
-
-    @Override
-    public String getBotUsername() {
-        return "Urfu_Botik";
-    }
-
-    @Override
-    public String getBotToken() {
-        return "5661011516:AAGka7AUxhB_YepFNTlmk4SKMOy5nsEQ8Ys";
-    }
-
-    public static void main(String[] args) throws TelegramApiException {
-        TestBot bot = new TestBot();
-        TelegramBotsApi telegramBotApi = new TelegramBotsApi(DefaultBotSession.class);
-        telegramBotApi.registerBot(bot);
-    }
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -38,9 +25,25 @@ public class TestBot extends TelegramLongPollingBot {
                                     .text("Ты написал - " + message.getText())
                                     .build());
                 } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
         }
+    }
+    @Override
+    public String getBotUsername() {
+        return "@test_Urfu_bot";
+    }
+
+    @Override
+    public String getBotToken() {
+        return "5661011516:AAGka7AUxhB_YepFNTlmk4SKMOy5nsEQ8Ys";
+    }
+
+
+    public static void main(String[] args) throws TelegramApiException {
+        TestBot bot = new TestBot();
+        TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);
+        api.registerBot(bot);
     }
 }
