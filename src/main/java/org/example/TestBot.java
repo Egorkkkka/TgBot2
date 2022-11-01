@@ -22,7 +22,7 @@ public class TestBot extends TelegramLongPollingBot {
                     execute(
                             SendMessage.builder()
                                     .chatId(message.getChatId().toString())
-                                    .text("Ты написал - " + message.getText())
+                                    .text("Проверкgggа - " + message.getText())
                                     .build());
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
