@@ -29,6 +29,11 @@
             <artifactId>telegrambotsextensions</artifactId>
             <version>LATEST</version>
         </dependency>
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambots-meta</artifactId>
+            <version>6.1.0</version>
+        </dependency>
     </dependencies>
 
 </project>
