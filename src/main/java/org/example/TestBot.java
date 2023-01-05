@@ -49,7 +49,7 @@ public class TestBot extends TelegramLongPollingBot {
                 List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
                 buttons.add(
                         Arrays.asList(
-                                InlineKeyboardButton.builder().text("Начать заново").callbackData("/start").build()
+                                InlineKeyboardButton.builder().text("Начать заново!").callbackData("/start").build()
                         )
                 );
                 try {
@@ -77,15 +77,16 @@ public class TestBot extends TelegramLongPollingBot {
                         )
                 );
 
-                try {
+                try { // https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https://istudent.urfu.ru&type=web_server&client_id=https://istudent.urfu.ru&redirect_uri=https://istudent.urfu.ru?auth&response_type=code&scope=
+                    String url = "https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https%3A%2F%2Fistudent.urfu.ru&type=web_server&client_id=https%3A%2F%2Fistudent.urfu.ru&redirect_uri=https%3A%2F%2Fistudent.urfu.ru%3Fauth%26rp%3DL3Mvc2NoZWR1bGU%253D3ce998544cd42ddb4cffeaae05dbfff0&response_type=code&scope=";
                     execute(
                             SendMessage.builder()
-                                    .text("На какой пероиод показать расписание занятий?")
+                                    .text("На какой пероиод показать расписание занятий?" + HttpUrlConnectionExample.sendUrfuRequest(url,"egorlantsov@mail.ru","Egorka123@"))
                                     .chatId(message.getChatId().toString())
                                     .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons2).build())
                                     .build()
                     );
-                } catch (TelegramApiException e) {
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
                 return;
