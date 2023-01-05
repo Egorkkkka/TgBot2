@@ -51,7 +51,7 @@ public class HttpUrlConnectionExample {
 //        System.out.println("HTTP- " + CookieHandler.getDefault());
         System.out.println("result === " + result);
         System.out.println("куки === " + http.getCookies());
-        return "Успех";
+        return " " + result;
     }
 
     public void sendPost(String url, String postParams) throws Exception {
