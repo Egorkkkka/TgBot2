@@ -1,6 +1,5 @@
 package org.example;
 
-import lombok.SneakyThrows;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.*;
@@ -13,6 +12,7 @@ import java.util.*;
 public class TestBot extends TelegramLongPollingBot {
 
     boolean waitPass = false;
+    boolean waitNote = false;
     String LOGIN = "";
     String PASSWORD = "";
     @Override
@@ -47,9 +47,11 @@ public class TestBot extends TelegramLongPollingBot {
 
     private void handleCallback(CallbackQuery callbackQuery) {
         Message message = callbackQuery.getMessage();
+        String idChat = String.valueOf(message.getChatId());
         String[] param = callbackQuery.getData().split(":");
         String action = param[0];
         switch (action) {
+            case "/exit":
             case "/start":
                 List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
                 buttons.add(
@@ -83,10 +85,11 @@ public class TestBot extends TelegramLongPollingBot {
                 );
 
                 try { // https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https://istudent.urfu.ru&type=web_server&client_id=https://istudent.urfu.ru&redirect_uri=https://istudent.urfu.ru?auth&response_type=code&scope=
-                    String url = "https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https%3A%2F%2Fistudent.urfu.ru&type=web_server&client_id=https%3A%2F%2Fistudent.urfu.ru&redirect_uri=https%3A%2F%2Fistudent.urfu.ru%3Fauth%26rp%3DL3Mvc2NoZWR1bGU%253D3ce998544cd42ddb4cffeaae05dbfff0&response_type=code&scope=";
+                    String url = "https://istudent.urfu.ru/s/schedule?auth-ok";
+//                    String url = "https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https%3A%2F%2Fistudent.urfu.ru&type=web_server&client_id=https%3A%2F%2Fistudent.urfu.ru&redirect_uri=https%3A%2F%2Fistudent.urfu.ru%3Fauth%26rp%3DL3Mvc2NoZWR1bGU%253D3ce998544cd42ddb4cffeaae05dbfff0&response_type=code&scope=";
                     execute(
                             SendMessage.builder()
-                                    .text("На какой пероиод показать расписание занятий?" + HttpUrlConnectionExample.sendUrfuRequest(url,"egorlantsov@mail.ru","Egorka123@"))
+                                    .text("На какой пероиод показать расписание занятий?")
                                     .chatId(message.getChatId().toString())
                                     .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons2).build())
                                     .build()
@@ -97,6 +100,14 @@ public class TestBot extends TelegramLongPollingBot {
                 return;
 
             case "items":
+                String urlBrs = "https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https%3A%2F%2Fistudent.urfu.ru&type=web_server&client_id=https%3A%2F%2Fistudent.urfu.ru&redirect_uri=https%3A%2F%2Fistudent.urfu.ru%3Fauth%26rp%3DL3MvaHR0cC11cmZ1LXJ1LXJ1LXN0dWRlbnRzLXN0dWR5LWJycw%253D%253Dd1ca03c09b406b6d440b4bab78479bdb&response_type=code&scope=";
+                try {
+                    String resBrs = HttpUrlConnectionExample.sendUrfuRequest(urlBrs, LOGIN, PASSWORD);
+                    System.out.println(" RES BRS === " + resBrs);
+
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 List<List<InlineKeyboardButton>> buttons3 = new ArrayList<>();
                 buttons3.add(
                         Arrays.asList(
@@ -108,7 +119,7 @@ public class TestBot extends TelegramLongPollingBot {
                 try {
                     execute(
                             SendMessage.builder()
-                                    .text("Информация об успеваимости:")
+                                    .text("Информация об успеваемости:")
                                     .chatId(message.getChatId().toString())
                                     .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons3).build())
                                     .build()
@@ -122,8 +133,8 @@ public class TestBot extends TelegramLongPollingBot {
                 List<List<InlineKeyboardButton>> buttons4 = new ArrayList<>();
                 buttons4.add(
                         Arrays.asList(
-                                InlineKeyboardButton.builder().text("Напомнить о событии").callbackData("#").build(),
-                                InlineKeyboardButton.builder().text("Написать шпаргалку").callbackData("#").build()
+                                InlineKeyboardButton.builder().text("Посмотреть заметки").callbackData("showNotes").build(),
+                                InlineKeyboardButton.builder().text("Написать заметку").callbackData("createNote").build()
                         )
                 );
 
@@ -161,6 +172,33 @@ public class TestBot extends TelegramLongPollingBot {
                     throw new RuntimeException(e);
                 }
 
+            case "showNotes":
+                try {
+                    execute(
+                            SendMessage.builder()
+                                    .text("Текст заметки: \n")
+                                    .text(RedisStorage.readFile(idChat))
+                                    .chatId(message.getChatId().toString())
+                                    .build()
+                    );
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+                return;
+
+            case "createNote":
+                waitNote = true;
+                try {
+                    execute(
+                            SendMessage.builder()
+                                    .text("Введите текст заметки")
+                                    .chatId(message.getChatId().toString())
+                                    .build()
+                    );
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+                return;
 
         }
 
@@ -176,6 +214,7 @@ public class TestBot extends TelegramLongPollingBot {
                         .substring(commandEntity.get().getOffset(), commandEntity.get().getLength());
                 switch (command) {
                     case "/start":
+                    case "/exit":
                         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
                         buttons.add(
                                 Collections.singletonList(
@@ -255,6 +294,34 @@ public class TestBot extends TelegramLongPollingBot {
                 }
 
             }
+            if (waitNote) {
+                RedisStorage.createFile(message.getChatId().toString(), message.getText());
+                List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+                buttons.add(
+                        Collections.singletonList(
+                                InlineKeyboardButton.builder().text("Посмотреть заметки").callbackData("showNotes").build()
+                        )
+                );
+                buttons.add(
+                        Collections.singletonList(
+                                InlineKeyboardButton.builder().text("Назад").callbackData("/next").build()
+                        )
+                );
+
+                try {
+                    execute(
+                            SendMessage.builder()
+                                    .text("Заметка создана!")
+                                    .chatId(message.getChatId().toString())
+                                    .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
+                                    .build()
+                    );
+                    waitNote = false;
+                    return;
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
 
         if (message.hasText() && waitPass) {
@@ -282,6 +349,11 @@ public class TestBot extends TelegramLongPollingBot {
                 buttons2.add(
                         Collections.singletonList(
                                 InlineKeyboardButton.builder().text("Информация о мероприятиях").callbackData("event").build()
+                        )
+                );
+                buttons2.add(
+                        Collections.singletonList(
+                                InlineKeyboardButton.builder().text("Выйти из аккаунта").callbackData("/exit").build()
                         )
                 );
 
