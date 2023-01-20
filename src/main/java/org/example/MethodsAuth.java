@@ -18,8 +18,6 @@ public class MethodsAuth {
         } else {
             res = "Вы ввели неверные данные!";
         }
-        System.out.println("logArea === " + elementLoginArea);
-        System.out.println(res);
         return res;
     }
 }

@@ -12,6 +12,7 @@ import java.util.*;
 public class TestBot extends TelegramLongPollingBot {
 
     boolean waitPass = false;
+    boolean waitLogin = false;
     boolean waitNote = false;
     String LOGIN = "";
     String PASSWORD = "";
@@ -41,18 +42,24 @@ public class TestBot extends TelegramLongPollingBot {
         }
 
         if (update.hasCallbackQuery()) {
-            handleCallback(update.getCallbackQuery());
+            try {
+                handleCallback(update.getCallbackQuery());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
-    private void handleCallback(CallbackQuery callbackQuery) {
+    private void handleCallback(CallbackQuery callbackQuery) throws Exception {
         Message message = callbackQuery.getMessage();
         String idChat = String.valueOf(message.getChatId());
         String[] param = callbackQuery.getData().split(":");
         String action = param[0];
+        System.out.println("Action === " + action);
         switch (action) {
             case "/exit":
             case "/start":
+                waitLogin = true;
                 List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
                 buttons.add(
                         Collections.singletonList(
@@ -68,7 +75,6 @@ public class TestBot extends TelegramLongPollingBot {
                                     .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                                     .build()
                     );
-
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
@@ -78,9 +84,7 @@ public class TestBot extends TelegramLongPollingBot {
                 List<List<InlineKeyboardButton>> buttons2 = new ArrayList<>();
                 buttons2.add(
                         Arrays.asList(
-                                InlineKeyboardButton.builder().text("На день").callbackData("#").build(),
-                                InlineKeyboardButton.builder().text("На неделю").callbackData("#").build(),
-                                InlineKeyboardButton.builder().text("На месяц").callbackData("#").build()
+                                InlineKeyboardButton.builder().text("Назад").callbackData("/back").build()
                         )
                 );
 
@@ -112,7 +116,8 @@ public class TestBot extends TelegramLongPollingBot {
                 buttons3.add(
                         Arrays.asList(
                                 InlineKeyboardButton.builder().text("Выбрать предмет").callbackData("#").build(),
-                                InlineKeyboardButton.builder().text("Все предметы").callbackData("#").build()
+                                InlineKeyboardButton.builder().text("Все предметы").callbackData("#").build(),
+                                InlineKeyboardButton.builder().text("Назад").callbackData("/back").build()
                         )
                 );
 
@@ -134,7 +139,8 @@ public class TestBot extends TelegramLongPollingBot {
                 buttons4.add(
                         Arrays.asList(
                                 InlineKeyboardButton.builder().text("Посмотреть заметки").callbackData("showNotes").build(),
-                                InlineKeyboardButton.builder().text("Написать заметку").callbackData("createNote").build()
+                                InlineKeyboardButton.builder().text("Написать заметку").callbackData("createNote").build(),
+                                InlineKeyboardButton.builder().text("Назад").callbackData("/back").build()
                         )
                 );
 
@@ -155,29 +161,49 @@ public class TestBot extends TelegramLongPollingBot {
                 List<List<InlineKeyboardButton>> buttons5 = new ArrayList<>();
                 buttons5.add(
                         Arrays.asList(
-                                InlineKeyboardButton.builder().text("Да").callbackData("#").build(),
-                                InlineKeyboardButton.builder().text("Нет").callbackData("#").build()
+                                InlineKeyboardButton.builder().text("Назад").callbackData("/back").build()
                         )
                 );
+                ArrayList<String> list = Notifications.parseEvents("egorlantsov@mail.ru", "Egorka123@");
 
                 try {
                     execute(
                             SendMessage.builder()
-                                    .text("Ты хочешь узнавать о всех мероприятих УрФУ ?:")
+                                    .text("Мероприятия: \n")
                                     .chatId(message.getChatId().toString())
-                                    .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons5).build())
                                     .build()
                     );
+                    for (int i = 0; i <= 5; i++) {
+                        if (i != 3) {
+                            execute(
+                                    SendMessage.builder()
+                                            .text(list.get(i))
+                                            .chatId(message.getChatId().toString())
+                                            .build()
+                            );
+                        } else {
+                            execute(
+                                    SendMessage.builder()
+                                            .text(list.get(i))
+                                            .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons5).build())
+                                            .chatId(message.getChatId().toString())
+                                            .build()
+                            );
+                        }
+
+                    }
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
+                return;
 
             case "showNotes":
                 try {
                     execute(
                             SendMessage.builder()
-                                    .text("Текст заметки: \n")
-                                    .text(RedisStorage.readFile(idChat))
+                                    .text("Текст заметки: \n" + RedisStorage.readFile(idChat))
                                     .chatId(message.getChatId().toString())
                                     .build()
                     );
@@ -199,7 +225,48 @@ public class TestBot extends TelegramLongPollingBot {
                     throw new RuntimeException(e);
                 }
                 return;
+            case "/back":
+                List<List<InlineKeyboardButton>> buttonsMain = new ArrayList<>();
+                buttonsMain.add(
+                        Collections.singletonList(
+                                InlineKeyboardButton.builder().text("Узнать баллы в БРС").callbackData("items").build()
+                        )
 
+                );
+                buttonsMain.add(
+                        Collections.singletonList(
+                                InlineKeyboardButton.builder().text("Создать заметку в дневник").callbackData("note").build()
+                        )
+                );
+                buttonsMain.add(
+                        Collections.singletonList(
+                                InlineKeyboardButton.builder().text("Расписание").callbackData("schedule").build()
+                        )
+                );
+                buttonsMain.add(
+                        Collections.singletonList(
+                                InlineKeyboardButton.builder().text("Информация о мероприятиях").callbackData("event").build()
+                        )
+                );
+                buttonsMain.add(
+                        Collections.singletonList(
+                                InlineKeyboardButton.builder().text("Выйти из аккаунта").callbackData("/exit").build()
+                        )
+                );
+
+
+                try {
+                    execute(
+                            SendMessage.builder()
+                                    .text("Меню: ")
+                                    .chatId(message.getChatId().toString())
+                                    .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttonsMain).build())
+                                    .build()
+                    );
+                    return;
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
         }
 
     }
@@ -215,59 +282,15 @@ public class TestBot extends TelegramLongPollingBot {
                 switch (command) {
                     case "/start":
                     case "/exit":
-                        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-                        buttons.add(
-                                Collections.singletonList(
-                                        InlineKeyboardButton.builder().text("Начать заново").callbackData("/next").build()
-                                )
-                        );
                         try {
                             execute(
                                     SendMessage.builder()
                                             .text("Привет!\n" +
                                                     "Введи логин (почту) к личному кабинету УрФУ")
                                             .chatId(message.getChatId().toString())
-                                            .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                                             .build()
                             );
-                            return;
-                        } catch (TelegramApiException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                    case "/next":
-                        List<List<InlineKeyboardButton>> buttons2 = new ArrayList<>();
-                        buttons2.add(
-                                Collections.singletonList(
-                                        InlineKeyboardButton.builder().text("Узнать баллы в БРС").callbackData("items").build()
-                                )
-
-                        );
-                        buttons2.add(
-                                Collections.singletonList(
-                                        InlineKeyboardButton.builder().text("Создать заметку в дневник").callbackData("note").build()
-                                )
-                        );
-                        buttons2.add(
-                                Collections.singletonList(
-                                        InlineKeyboardButton.builder().text("Расписание").callbackData("schedule").build()
-                                )
-                        );
-                        buttons2.add(
-                                Collections.singletonList(
-                                        InlineKeyboardButton.builder().text("Информация о мероприятиях").callbackData("event").build()
-                                )
-                        );
-
-
-                        try {
-                            execute(
-                                    SendMessage.builder()
-                                            .text("Ты успешно авторизовался")
-                                            .chatId(message.getChatId().toString())
-                                            .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons2).build())
-                                            .build()
-                            );
+                            waitLogin = true;
                             return;
                         } catch (TelegramApiException e) {
                             throw new RuntimeException(e);
@@ -278,21 +301,35 @@ public class TestBot extends TelegramLongPollingBot {
         }
 
         if (message.hasText()) {
-            if(message.getText().contains("@") && message.getText().contains(".")) {
-                waitPass = true;
-                LOGIN = message.getText();
-                try {
-                    execute(
-                            SendMessage.builder()
-                                    .text("Введите пароль к личному кабинету")
-                                    .chatId(message.getChatId().toString())
-                                    .build()
-                    );
-                    return;
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
+            if (waitLogin) {
+                if(message.getText().contains("@") && message.getText().contains(".")) {
+                    waitLogin = false;
+                    waitPass = true;
+                    LOGIN = message.getText();
+                    try {
+                        execute(
+                                SendMessage.builder()
+                                        .text("Введите пароль к личному кабинету")
+                                        .chatId(message.getChatId().toString())
+                                        .build()
+                        );
+                        return;
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    try {
+                        execute(
+                                SendMessage.builder()
+                                        .text("Вы ввели неверный логин!")
+                                        .chatId(message.getChatId().toString())
+                                        .build()
+                        );
+                        return;
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-
             }
             if (waitNote) {
                 RedisStorage.createFile(message.getChatId().toString(), message.getText());
@@ -304,7 +341,7 @@ public class TestBot extends TelegramLongPollingBot {
                 );
                 buttons.add(
                         Collections.singletonList(
-                                InlineKeyboardButton.builder().text("Назад").callbackData("/next").build()
+                                InlineKeyboardButton.builder().text("Назад").callbackData("/back").build()
                         )
                 );
 
@@ -361,7 +398,7 @@ public class TestBot extends TelegramLongPollingBot {
                 try {
                     execute(
                             SendMessage.builder()
-                                    .text("Ты успешно авторизовался")
+                                    .text("Меню: ")
                                     .chatId(message.getChatId().toString())
                                     .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons2).build())
                                     .build()
@@ -371,11 +408,18 @@ public class TestBot extends TelegramLongPollingBot {
                     throw new RuntimeException(e);
                 }
             } else {
+                List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+                buttons.add(
+                        Collections.singletonList(
+                                InlineKeyboardButton.builder().text("Начать заново").callbackData("/start").build()
+                        )
+                );
                 try {
                     execute(
                             SendMessage.builder()
                                     .text("Вы ввели неверные данные!")
                                     .chatId(message.getChatId().toString())
+                                    .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                                     .build()
                     );
                     return;
