@@ -2,9 +2,9 @@ package org.example;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import javax.net.ssl.HttpsURLConnection;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -19,10 +19,7 @@ public class HttpUrlConnectionExample {
     private final String USER_AGENT = "Mozilla/5.0";
 
     public static String sendUrfuRequest(String url, String login, String password) throws Exception {
-//        String url = "https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https://istudent.urfu.ru&type=web_server&client_id=https://istudent.urfu.ru&redirect_uri=https://istudent.urfu.ru?auth&response_type=code&scope=";
-//        String url = "https://istudent.urfu.ru/assets/vendor/changed/orphus.js?v=1667395886";
-//        String url = "https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https%3A%2F%2Fistudent.urfu.ru&type=web_server&client_id=https%3A%2F%2Fistudent.urfu.ru&redirect_uri=https%3A%2F%2Fistudent.urfu.ru%3Fauth%26rp%3DL3MvaHR0cC11cmZ1LXJ1LXJ1LXN0dWRlbnRzLXN0dWR5LWJycw%253D%253Dd1ca03c09b406b6d440b4bab78479bdb&response_type=code&scope=";
-            // БРС 3 строка
+          // БРС 3 строка
         HttpUrlConnectionExample http = new HttpUrlConnectionExample();
 
         // make sure cookies is turn on
@@ -39,7 +36,6 @@ public class HttpUrlConnectionExample {
         // 2. Construct above post's content and then send a POST request for
         // authentication
         http.sendPost(url, postParams);
-        System.out.println("22222222222222222222222END");
 
         // 3. success then gow.
         String result = http.GetPageContent(url);
@@ -186,20 +182,19 @@ public class HttpUrlConnectionExample {
 
         // Google form id
         Element loginform = doc.getElementById("loginForm");
+        assert loginform != null;
         Elements inputElements = loginform.getElementsByTag("input");
         List<String> paramList = new ArrayList<String>();
         for (Element inputElement : inputElements) {
             System.out.println(inputElement);
             String key = inputElement.attr("name");
-//            System.out.println("key --- " + key);
             String value = inputElement.attr("value");
-//            System.out.println("value --- " + value);
 
             if (key.equals("UserName"))
                 value = username;
             else if (key.equals("Password"))
                 value = password;
-            paramList.add(key + "=" + URLEncoder.encode(value, "UTF-8"));
+            paramList.add(key + "=" + URLEncoder.encode(value, StandardCharsets.UTF_8));
         }
 
         // build parameters list
@@ -208,7 +203,7 @@ public class HttpUrlConnectionExample {
             if (result.length() == 0) {
                 result.append(param);
             } else {
-                result.append("&" + param);
+                result.append("&").append(param);
             }
         }
         System.out.println("result - getFormPar == " + result);

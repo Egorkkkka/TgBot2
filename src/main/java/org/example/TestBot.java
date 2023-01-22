@@ -14,24 +14,12 @@ public class TestBot extends TelegramLongPollingBot {
     boolean waitPass = false;
     boolean waitLogin = false;
     boolean waitNote = false;
+
     String LOGIN = "";
     String PASSWORD = "";
+
     @Override
     public void onUpdateReceived(Update update) {
-//        if (update.hasMessage()) {
-//            Message message = update.getMessage();
-//            if (message.hasText()){
-//                try {
-//                    execute(
-//                            SendMessage.builder()
-//                                    .chatId(message.getChatId().toString())
-//                                    .text("Testing - " + message.getText())
-//                                    .build());
-//                } catch (TelegramApiException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
 
         if (update.hasMessage()) {
             try {
@@ -57,8 +45,7 @@ public class TestBot extends TelegramLongPollingBot {
         String action = param[0];
         System.out.println("Action === " + action);
         switch (action) {
-            case "/exit":
-            case "/start":
+            case "/exit", "/start" -> {
                 waitLogin = true;
                 List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
                 buttons.add(
@@ -78,22 +65,20 @@ public class TestBot extends TelegramLongPollingBot {
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
-                return;
-
-            case "schedule":
+            }
+            case "schedule" -> {
                 List<List<InlineKeyboardButton>> buttons2 = new ArrayList<>();
                 buttons2.add(
-                        Arrays.asList(
+                        List.of(
                                 InlineKeyboardButton.builder().text("Назад").callbackData("/back").build()
                         )
                 );
+                try {
+//                    String url = "https://istudent.urfu.ru/s/schedule?auth-ok";
 
-                try { // https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https://istudent.urfu.ru&type=web_server&client_id=https://istudent.urfu.ru&redirect_uri=https://istudent.urfu.ru?auth&response_type=code&scope=
-                    String url = "https://istudent.urfu.ru/s/schedule?auth-ok";
-//                    String url = "https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https%3A%2F%2Fistudent.urfu.ru&type=web_server&client_id=https%3A%2F%2Fistudent.urfu.ru&redirect_uri=https%3A%2F%2Fistudent.urfu.ru%3Fauth%26rp%3DL3Mvc2NoZWR1bGU%253D3ce998544cd42ddb4cffeaae05dbfff0&response_type=code&scope=";
                     execute(
                             SendMessage.builder()
-                                    .text("На какой пероиод показать расписание занятий?")
+                                    .text("Расписание занятий")
                                     .chatId(message.getChatId().toString())
                                     .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons2).build())
                                     .build()
@@ -101,9 +86,8 @@ public class TestBot extends TelegramLongPollingBot {
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                return;
-
-            case "items":
+            }
+            case "items" -> {
                 String urlBrs = "https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https%3A%2F%2Fistudent.urfu.ru&type=web_server&client_id=https%3A%2F%2Fistudent.urfu.ru&redirect_uri=https%3A%2F%2Fistudent.urfu.ru%3Fauth%26rp%3DL3MvaHR0cC11cmZ1LXJ1LXJ1LXN0dWRlbnRzLXN0dWR5LWJycw%253D%253Dd1ca03c09b406b6d440b4bab78479bdb&response_type=code&scope=";
                 try {
                     String resBrs = HttpUrlConnectionExample.sendUrfuRequest(urlBrs, LOGIN, PASSWORD);
@@ -120,7 +104,6 @@ public class TestBot extends TelegramLongPollingBot {
                                 InlineKeyboardButton.builder().text("Назад").callbackData("/back").build()
                         )
                 );
-
                 try {
                     execute(
                             SendMessage.builder()
@@ -132,9 +115,8 @@ public class TestBot extends TelegramLongPollingBot {
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
-                return;
-
-            case "note":
+            }
+            case "note" -> {
                 List<List<InlineKeyboardButton>> buttons4 = new ArrayList<>();
                 buttons4.add(
                         Arrays.asList(
@@ -143,7 +125,6 @@ public class TestBot extends TelegramLongPollingBot {
                                 InlineKeyboardButton.builder().text("Назад").callbackData("/back").build()
                         )
                 );
-
                 try {
                     execute(
                             SendMessage.builder()
@@ -155,17 +136,15 @@ public class TestBot extends TelegramLongPollingBot {
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
-                return;
-
-            case "event":
+            }
+            case "event" -> {
                 List<List<InlineKeyboardButton>> buttons5 = new ArrayList<>();
                 buttons5.add(
-                        Arrays.asList(
+                        List.of(
                                 InlineKeyboardButton.builder().text("Назад").callbackData("/back").build()
                         )
                 );
                 ArrayList<String> list = Notifications.parseEvents("egorlantsov@mail.ru", "Egorka123@");
-
                 try {
                     execute(
                             SendMessage.builder()
@@ -192,14 +171,11 @@ public class TestBot extends TelegramLongPollingBot {
                         }
 
                     }
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                return;
-
-            case "showNotes":
+            }
+            case "showNotes" -> {
                 try {
                     execute(
                             SendMessage.builder()
@@ -210,9 +186,8 @@ public class TestBot extends TelegramLongPollingBot {
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
-                return;
-
-            case "createNote":
+            }
+            case "createNote" -> {
                 waitNote = true;
                 try {
                     execute(
@@ -224,12 +199,13 @@ public class TestBot extends TelegramLongPollingBot {
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
-                return;
-            case "/back":
+            }
+            case "/back" -> {
                 List<List<InlineKeyboardButton>> buttonsMain = new ArrayList<>();
                 buttonsMain.add(
                         Collections.singletonList(
                                 InlineKeyboardButton.builder().text("Узнать баллы в БРС").callbackData("items").build()
+
                         )
 
                 );
@@ -253,8 +229,6 @@ public class TestBot extends TelegramLongPollingBot {
                                 InlineKeyboardButton.builder().text("Выйти из аккаунта").callbackData("/exit").build()
                         )
                 );
-
-
                 try {
                     execute(
                             SendMessage.builder()
@@ -263,10 +237,10 @@ public class TestBot extends TelegramLongPollingBot {
                                     .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttonsMain).build())
                                     .build()
                     );
-                    return;
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
+            }
         }
 
     }
@@ -302,7 +276,7 @@ public class TestBot extends TelegramLongPollingBot {
 
         if (message.hasText()) {
             if (waitLogin) {
-                if(message.getText().contains("@") && message.getText().contains(".")) {
+                if (message.getText().contains("@") && message.getText().contains(".")) {
                     waitLogin = false;
                     waitPass = true;
                     LOGIN = message.getText();
@@ -363,7 +337,7 @@ public class TestBot extends TelegramLongPollingBot {
 
         if (message.hasText() && waitPass) {
             PASSWORD = message.getText();
-            String status = MethodsAuth.checkPassword(LOGIN,PASSWORD);
+            String status = MethodsAuth.checkPassword(LOGIN, PASSWORD);
             waitPass = false;
             if (status.equals("Вы успешно авторизовались!")) {
                 List<List<InlineKeyboardButton>> buttons2 = new ArrayList<>();
@@ -403,7 +377,6 @@ public class TestBot extends TelegramLongPollingBot {
                                     .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons2).build())
                                     .build()
                     );
-                    return;
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
@@ -422,7 +395,6 @@ public class TestBot extends TelegramLongPollingBot {
                                     .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                                     .build()
                     );
-                    return;
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
