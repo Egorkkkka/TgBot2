@@ -2,16 +2,12 @@ package org.example;
 
 import java.io.*;
 
-public class RedisStorage {
+public class Storage {
 
     public static void createFile(String fileName, String text) {
 
         try (FileWriter writer = new FileWriter(fileName, false)) {
-            // запись всей строки
             writer.write(text);
-            // запись по символам
-//            writer.append('E');
-
             writer.flush();
         } catch (IOException ex) {
             System.out.println(ex.getMessage());

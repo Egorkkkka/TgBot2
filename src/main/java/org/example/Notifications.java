@@ -34,7 +34,7 @@ public class Notifications {
                 bodyElement.append(p.text()).append("\n");
             }
 
-            eventsList.add(header.text() + "\n" + taskTime.text() + "\n" + bodyElement);
+            eventsList.add(header.text() + "\n---------------------------------\n" + taskTime.text() + "\n" + bodyElement);
             counter++;
         }
         return eventsList;
